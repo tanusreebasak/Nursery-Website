@@ -1,0 +1,1 @@
+"Hello this is a sample website built on Django"
