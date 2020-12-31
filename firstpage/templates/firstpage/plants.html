@@ -1,12 +1,22 @@
 {% extends 'firstpage/main.html' %}
 {% load static %}
 {% block content %}
+{% load cart %}
+{% load custom_filter %}
     <br>
-    <div class="ro">
+    <div class="row">
         <div class="col-md">
             <div class="card card-body">
                 <h5>PLANTS IN TANUSREE'S NURSERY</h5>
-            </div>                
+            </div>            
+            <div class="col-md-20">
+		        <div class="card card-body">
+			        <h5>Contact Information</h5>
+			        <hr>
+			        <p>Email: {{customer.email}} </p>
+			        <p>Phone: {{customer.phone}}</p>                    
+		        </div>
+	        </div>              
             <div class="card card-body">
                 <table class="table">
                     <tr>
@@ -20,19 +30,42 @@
                         <td>{{i.name}}</td>
                         <td><img class="card" style="width: 5rem;" src="{{i.image.url}}" alt="Plant Image"></td>                        
                         <td>{{i.category}}</td>
-                        <td>{{i.price}}</td>                       
-                        <td>
-                        <form action="/" , method="POST">
-                            {% csrf_token %}
-                            <input hidden type="text" name="product" value='{{i.id}}'>
-                        <input type="submit" class="btn btn-primary btn-sm" value="Add To Cart">
-                        </td> 
-                        
+                        <td>{{i.price|currency}}</td>                        
+                        <div class="card-footer p-0 no-gutters" >
+                            {% if i|is_in_cart:request.session.cart %}
+                                <td>
+                                <div class="row no-gutters" >                                           
+                                    <form action="/plants/" class="col-4" method="POST">
+                                        {% csrf_token %}
+                                        <input hidden type="text" name='product' value='{{i.id}}'>
+                                        <input hidden type="text" name='remove' value='True'>
+                                        <input type="submit" value="-" class="btn btn-block btn-secondary">
+                                    </form>
+                                    <div class="text-center col">{{i|cart_quantity:request.session.cart}} in Cart</div>
+                                    <form action="" class="col-4" method="POST">
+                                        {% csrf_token %}
+                                        <input hidden type="text" name='product' value='{{i.id}}'>
+                                        <input type="submit" value="+" class="btn btn-block btn-secondary">
+                                    </form>
+                                </div> 
+                                </td>  
+                            {% else %}
+                                <td>
+                                <form action="/plants/", method="POST" class="btn-block">
+                                    {% csrf_token %}
+                                    <input hidden type="text" name='product' value='{{i.id}}'>
+                                    <input type="submit" class="float-right btn btn-primary btn-sm border form-control" value="Add To Cart">
+                                </form>
+                                </td>
+                            {% endif %}                   
+                        </div>                                            
                     </tr>
                     {% endfor %}
                 </table>
             </div>
         </div>
-    </div>    
+    </div>
+<div>
+</div>    
 {% endblock content %}
     

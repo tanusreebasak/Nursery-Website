@@ -10,26 +10,7 @@ from .models import *
 from .filters import OrderFilter
 from django.contrib import messages
 from .decorators import unauthenticated_user,allowed_users,admin_only
-from django.views import View
-
-
-def post(self,request):
-    product = request.POST.get('product')
-    cart = request.session.get('cart')
-    if cart:
-        quantity = cart.get(product)
-        if quantity:
-            cart[product] = quantity + 1 
-        else:
-            cart[product] = 1
-    else:
-        cart={}
-        cart['products'] = 1
-    request.session['cart'] = cart
-    return redirect('user-page')
-def get(self,request):
-    products = None
-    
+from django.views import View    
 
 @unauthenticated_user
 def registerPage(request):          
@@ -55,21 +36,24 @@ def loginPage(request):
         user = authenticate(request, username= username , password = password)
         if user is not None:
             login(request,user)
-            return redirect('home')
+            request.session['customer_id'] = request.user.customer.id 
+            request.session['email'] = request.user.customer.email           
+            return redirect('plants')
         else:
-            messages.info(request, 'USername or password is incorrect !!')            
+            messages.info(request, 'Username or password is incorrect !!')            
     context={}
     return render(request, 'firstpage/login.html' , context)
 
 def logoutUser(request): 
     logout(request)
+    request.session.clear()
     return redirect('login')
 
 
 @login_required(login_url='login')
 @admin_only
 def home(request):
-    orders= Order.objects.all()
+    orders= CartOrders.objects.all()
     customers = Customer.objects.all()
     total_customers = customers.count()
     total_orders = orders.count()
@@ -78,27 +62,16 @@ def home(request):
     context = {'orders':orders,'customers':customers,'total_orders':total_orders,'delivered':delivered,'pending':pending}
     return render(request, 'firstpage/dashboard.html',context)
 
-@login_required(login_url='login')
+
+'''@login_required(login_url='login')
 @allowed_users(allowed_roles=['customer'])
-def userPage(request):
-    product = request.POST.get('product')
-    cart = request.session.get('cart')
-    if cart:
-        quantity = cart.get(product)
-        if quantity:
-            cart[product] = quantity + 1 
-        else:
-            cart[product] = 1
-    else:
-        cart={}
-        cart['products'] = 1
-    request.session['cart'] = cart
+def userPage(request):    
     orders = request.user.customer.order_set.all()
     total_orders = orders.count()
     delivered = orders.filter(status='Delivered').count()
     pending = orders.filter(status='Pending').count() 
     context={'orders':orders,'total_orders':total_orders,'delivered':delivered,'pending':pending}
-    return render(request, 'firstpage/user.html',context)
+    return render(request, 'firstpage/user.html',context)'''
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['customer'])
@@ -114,17 +87,45 @@ def accountSettings(request):
 
 
 def plants(request):
-    plants = Plants.objects.all()
-    return render(request, 'firstpage/plants.html',{'plants':plants})
+    if request.method == 'POST':        
+        product = request.POST.get('product')
+        remove = request.POST.get('remove')              
+        cart = request.session.get('cart')        
+        if cart:
+            quantity = cart.get(product)
+            if quantity:
+                if remove:
+                    if quantity==1:
+                        cart.pop(product)
+                    else:
+                        cart[product] = quantity-1
+                else:
+                    cart[product] = quantity+1
+            else:
+                cart[product]=1
+        else:
+            cart={}
+            cart[product]=1
+        request.session['cart'] = cart
+        print(request.session['cart'])
+        return redirect('plants')  
+    if request.method == 'GET':
+        cart = request.session.get('cart')
+        if not cart:
+            request.session['cart'] =  {}   
+        plants = Plants.objects.all()
+        customer = request.user.customer
+        context={'customer':customer,'plants':plants}
+        print('You are : ' , request.session.get('email'))    
+        return render(request, 'firstpage/plants.html',context)
 
-def contact(request):
-    return render(request, 'firstpage/contact.html')
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['admin'])
 def customer(request,pk):
     customer = Customer.objects.get(id=pk)
-    orders = customer.order_set.all()
+    orders = CartOrders.get_orders_by_customer(customer)    
+    #orders = customer.order_set.all()
     order_count = orders.count()
     myFilter = OrderFilter(request.GET,queryset=orders)
     orders = myFilter.qs
@@ -132,7 +133,6 @@ def customer(request,pk):
     return render(request, 'firstpage/customer.html',context)
 
 @login_required(login_url='login')
-@allowed_users(allowed_roles=['customer'])
 def createOrder(request,pk):
     OrderFormSet = inlineformset_factory(Customer,Order,fields=('plants','status'),extra=5)
     customer = Customer.objects.get(id=pk)
@@ -150,22 +150,60 @@ def createOrder(request,pk):
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['admin'])
 def updateOrder(request,pk):
-    order = Order.objects.get(id=pk)
-    form = OrderForm(instance=order)
+    action = 'update'
+    order = CartOrders.objects.get(id=pk)
+    form = OrderForm(instance=order)	  
     if request.method=='POST':
-        form = OrderForm(request.POST , instance=order)
+        form = OrderForm(request.POST,instance=order)
         if form.is_valid():
             form.save()
-            return redirect('/')
-    context={'form':form}
+            return redirect('/customer/' + str(order.customer.id))
+            #return redirect('/')
+    context={'action':action,'form':form}
     return render(request, 'firstpage/order_form.html',context)
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['admin'])
 def deleteOrder(request,pk):
-    order = Order.objects.get(id=pk)
+    order = CartOrders.objects.get(id=pk)
     if request.method=='POST':
         order.delete()
         return redirect('/')
     context={'item':order}
     return render(request, 'firstpage/delete.html',context)
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['customer'])
+def cart(request):    
+    customer = request.user.customer
+    ids= list(request.session.get('cart').keys())
+    products = Plants.get_plants_by_id(ids)
+    context={'products':products,'customer':customer}
+    return render(request, 'firstpage/cart.html',context)
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['customer'])
+def checkout(request):    
+    address = request.POST.get('address')
+    phone = request.POST.get('phone')
+    customer = request.user.customer
+    cart = request.session.get('cart')
+    products = Plants.get_plants_by_id(list(cart.keys()))    
+    for product in products:
+        order = CartOrders(customer = customer, 
+                           plants = product,
+                           price = product.price,
+                           quantity = cart.get(str(product.id)),
+                           address = address,
+                           phone=phone)
+        order.save()
+    request.session['cart']={}
+    return redirect('orders')
+
+def orders(request):
+    customer = request.user.customer
+    orders = CartOrders.get_orders_by_customer(customer)
+    orders = orders.reverse()
+    context={'orders':orders}
+    return render(request, 'firstpage/orders.html',context)
+    
