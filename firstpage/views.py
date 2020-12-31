@@ -43,6 +43,7 @@ def loginPage(request):
             messages.info(request, 'Username or password is incorrect !!')            
     context={}
     return render(request, 'firstpage/login.html' , context)
+    
 
 def logoutUser(request): 
     logout(request)
@@ -61,17 +62,6 @@ def home(request):
     pending = orders.filter(status='Pending').count()  
     context = {'orders':orders,'customers':customers,'total_orders':total_orders,'delivered':delivered,'pending':pending}
     return render(request, 'firstpage/dashboard.html',context)
-
-
-'''@login_required(login_url='login')
-@allowed_users(allowed_roles=['customer'])
-def userPage(request):    
-    orders = request.user.customer.order_set.all()
-    total_orders = orders.count()
-    delivered = orders.filter(status='Delivered').count()
-    pending = orders.filter(status='Pending').count() 
-    context={'orders':orders,'total_orders':total_orders,'delivered':delivered,'pending':pending}
-    return render(request, 'firstpage/user.html',context)'''
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['customer'])
@@ -161,6 +151,17 @@ def updateOrder(request,pk):
             #return redirect('/')
     context={'action':action,'form':form}
     return render(request, 'firstpage/order_form.html',context)
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['admin'])
+def addPlant(request):    
+    val = request.user.is_staff
+    print(val)
+    if val==True:
+        return render(request, 'firstpage/adminplants.html')
+    else:
+        return render(request, 'firstpage/adminplants.html')
+
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['admin'])
