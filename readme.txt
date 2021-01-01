@@ -1,4 +1,4 @@
-This is a nursery webiste built out of Django , HTML , CSS and Bootstrap.
+This is a nursery webiste built out of Django , HTML , CSS and Bootstrap , Python and Git.
 
 Functionalities:
 
