@@ -203,8 +203,9 @@ def checkout(request):
 
 def orders(request):
     customer = request.user.customer
-    orders = CartOrders.get_orders_by_customer(customer)
+    orders = CartOrders.get_orders_by_customer(customer)    
     orders = orders.reverse()
+    orders = orders[::-1]    
     context={'orders':orders}
     return render(request, 'firstpage/orders.html',context)
     
