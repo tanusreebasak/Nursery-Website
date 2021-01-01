@@ -6,7 +6,7 @@ Sign Up and Login(Authorization and Authentication):
 
   1. User can sign up with their username , email address and password.
   2. On signup , redirects to Login Page and they can login.
-  3. Login takes the user to the page where they can view all the plants.  
+  3. Login takes the user to the page where they can view all the plants. 
 
 
 User:
@@ -18,6 +18,7 @@ User:
 5. User can see the status of their order items in "Your Orders" page. It is either pending(yellow colour) or delivered(green). User can also see the date of the order for that      particular item.
 6. User can view their orders, with the most recent order at the top
 7. User can also see his/her contact information while navigating in the plants page.
+8. User can upload his profile picture from the Settings tab in the navigation bar.
 
 Admin:
 
@@ -38,7 +39,8 @@ Concepts Used:
 6. Database Designing and their Relations
 7. Filters
 8. HTML,CSS,Bootstrap
-9. Administration 
+9. Administration
 
 
 @Author - Tanusree Basak
+
