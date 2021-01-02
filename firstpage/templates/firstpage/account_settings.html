@@ -20,16 +20,16 @@
 			<h3 style="text-align: center">Account Settings</h3>
 			<hr>
 			<img class="profile-pic" src="{{request.user.customer.profile_pic.url}}" >
-		
+
 		</div>
 	</div>
 	<div class="col-md-9">
 		<div class="card card-body">
-			
+
 			<form method="POST" action="" enctype="multipart/form-data">
 				{% csrf_token %}
 				{{form.as_p}}
-		
+
 			<input class="btn btn-primary" type="submit" name="Update Information">
 			</form>
 		</div>
@@ -38,8 +38,4 @@
 
 
 
-<<<<<<< HEAD
 {% endblock %}
-=======
-{% endblock %}
->>>>>>> 5c4458667461fbaf7074eb468e5552766216dd17
