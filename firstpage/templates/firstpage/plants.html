@@ -2,16 +2,15 @@
 {% load static %}
 {% block content %}
 {% load cart %}
-{% load custom_filter %}
-    <br>
+{% load custom_filter %}    
     <div class="row">
         <div class="col-md">
             <div class="card card-body">
-                <h5>PLANTS IN TANUSREE'S NURSERY</h5>
-            </div>            
-            <div class="col-md-20">
-		        <div class="card card-body">
-			        <h5>Contact Information</h5>
+                <marquee direction="right"><h5>PLANTS IN TANUSREE'S NURSERY</h5></marquee>
+            </div>                       
+            <div class="col-md">
+		        <div class="card-body">
+			        <h6>Contact Information</h6>
 			        <hr>
 			        <p>Email: {{customer.email}} </p>
 			        <p>Phone: {{customer.phone}}</p>                    
@@ -25,6 +24,7 @@
                         <th>Category</th>
                         <th>Price</th>                                           
                     </tr>
+                    
                     {% for i in plants %}
                     <tr>
                         <td>{{i.name}}</td>

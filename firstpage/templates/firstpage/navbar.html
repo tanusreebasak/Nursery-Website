@@ -5,9 +5,14 @@
     color: #fff;
     margin-right: 20px;
   }
+  .logo-display{    
+  max-width: 130px;
+  height: 50px;
+  }  
 </style>
+
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
- <img src="{% static 'images/companylogo.jpg' %}">
+ <img class="logo-display" src="{% static 'images/companylogo.jpg' %}">
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
@@ -31,13 +36,13 @@
         <a class="nav-link" href="{% url 'orders' %}">Orders</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="{% url 'account' %}">Settings</a>
+        <a class="nav-link" href="{% url 'account' %}">Profile</a>
       </li>
       
     {% endif %}
                 
     </ul>
-  </div>
+  </div>  
   <span class="hello-msg">Hello, {{request.user}}</span>
   <span ><a  class="hello-msg" href="{% url 'logout' %}">Logout</a></span>
 </nav>
