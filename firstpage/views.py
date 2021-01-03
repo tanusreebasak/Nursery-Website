@@ -33,12 +33,20 @@ def loginPage(request):
     if request.method=='POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
-        user = authenticate(request, username= username , password = password)
+        user = authenticate(request, username= username , password = password)              
         if user is not None:
-            login(request,user)
-            request.session['customer_id'] = request.user.customer.id 
-            request.session['email'] = request.user.customer.email           
-            return redirect('plants')
+            print("You are,",user) 
+            if  user.is_staff==True:
+                plants = Plants.objects.all()
+                context={'plants':plants} 
+                print("your staff status:",user.is_staff)
+                login(request,user)
+                return render(request, 'firstpage/adminplants.html',context)
+            else:
+                login(request,user)
+                request.session['customer_id'] = request.user.customer.id 
+                request.session['email'] = request.user.customer.email           
+                return redirect('plants')
         else:
             messages.info(request, 'Username or password is incorrect !!')            
     context={}
@@ -154,13 +162,10 @@ def updateOrder(request,pk):
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['admin'])
-def addPlant(request):    
-    val = request.user.is_staff
-    print(val)
-    if val==True:
-        return render(request, 'firstpage/adminplants.html')
-    else:
-        return render(request, 'firstpage/adminplants.html')
+def addPlant(request): 
+    plants = Plants.objects.all()
+    context={'plants':plants}    
+    return render(request, 'firstpage/adminplants.html',context)    
 
 
 @login_required(login_url='login')
